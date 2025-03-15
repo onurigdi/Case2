@@ -1,22 +1,28 @@
 using Game.Scripts.Enums;
+using Game.Scripts.Managers.StateManager;
 using MessagePipe;
 using Zenject;
+using Game.Scripts.Controllers.Stack.Mono;
+using Game.Scripts.Pools;
+using UnityEngine;
 
 namespace Game.Scripts.Installer
 {
     public class GameInstaller : MonoInstaller
     {
-        //public Cell cellPrefab;
+        [Header("Pool References")]
+        public Stack stackPrefab;
 
         public override void InstallBindings()
         {
+            Container.BindInterfacesAndSelfTo<StateManager>().AsSingle().NonLazy();
             #region Pool Bindings
-/*
-            Container.BindMemoryPool<Cell, CellPool>()
+
+            Container.BindMemoryPool<Stack, StackPool>()
                 .WithInitialSize(25) 
-                .FromComponentInNewPrefab(cellPrefab) 
-                .UnderTransformGroup("CellPool");             
-*/
+                .FromComponentInNewPrefab(stackPrefab) 
+                .UnderTransformGroup("StackPool");             
+
             #endregion
             
             #region MessagePipeOptions
