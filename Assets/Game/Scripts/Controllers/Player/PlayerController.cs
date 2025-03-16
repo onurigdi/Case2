@@ -100,9 +100,10 @@ namespace Game.Scripts.Controllers.Player
             newPath.Add(midPoint);
             newPath.Add(endPos);
 
+            float speed = _gameConfig.slowestPingPongSpeed - Mathf.Clamp( _gameConfig.slowestPingPongSpeed - (PersistentData.Level * 0.2f), 0.5f, _gameConfig.slowestPingPongSpeed);
             _moveTween?.Kill();
             _moveTween = transform
-                .DOPath(newPath.ToArray(), 2f, PathType.Linear, PathMode.Full3D)
+                .DOPath(newPath.ToArray(), 1.7f + speed, PathType.Linear, PathMode.Full3D)
                 .SetSpeedBased()
                 .SetLookAt(0.1f)
                 .SetEase(Ease.Linear)

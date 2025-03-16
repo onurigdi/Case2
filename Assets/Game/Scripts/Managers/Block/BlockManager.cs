@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Game.Scripts.Config;
 using Game.Scripts.Controllers.Player;
 using Game.Scripts.Enums;
+using Game.Scripts.Managers.Audio;
+using Game.Scripts.Managers.Audio.Enums;
 using Game.Scripts.Managers.Input.Enums;
 using Game.Scripts.Managers.State.Enums;
 using Game.Scripts.Pools;
@@ -25,9 +27,11 @@ namespace Game.Scripts.Managers.Block
         [Inject] private GameConfig _gameConfig;
         [Inject] private BlockPool _blockPool;
         [Inject] private PlayerController _playerController;
+        [Inject] private AudioManager _audioManager;
         private Vector3 _lastBlockPosition;
         private Mono.Block _lastBlock;
         private Mono.Block _previousBlock;
+        private int _perfectScoreCounter;
 
         private int _blockCountToWin;
         private Mono.Block _activeFinishBlock;
@@ -53,11 +57,13 @@ namespace Game.Scripts.Managers.Block
         
         private void OnGameStartRequested(object obj)
         {
+            ResetCombo();
             SpawnNextBlock();
         }
         
         private void OnGameRestartRequested(object obj)
         {
+            ResetCombo();
             RestartGame();
         }
 
@@ -173,15 +179,21 @@ namespace Game.Scripts.Managers.Block
             }
             else
             {
-                //perfectScoreCounter = 0;
+                ResetCombo();
                 ChopStack();
             }
             
             _generalEventsPublisher?.Publish(GeneralEvents.OnBlockChopped,_lastBlock);
         }
+
+        private void ResetCombo()
+        {
+            _perfectScoreCounter = 0;
+        }
         
         private void ChopStack()
         {
+            _audioManager.Play(SoundType.ChopStack); 
             VectorHelper.Vector3Coord axis = VectorHelper.Vector3Coord.x;
 
             //GameManager.instance.SoundManager.PlaySplitSFX();
@@ -218,8 +230,8 @@ namespace Game.Scripts.Managers.Block
 
         void PerfectScore()
         {
-           /* perfectScoreCounter++;
-            GameManager.instance.SoundManager.PlayPerfectSFX(perfectScoreCounter);*/
+            _audioManager.PlayPitchIncreased(SoundType.BestFit,1 + (_perfectScoreCounter * 0.05f)); 
+            _perfectScoreCounter++;
         }
 
         public void Dispose()

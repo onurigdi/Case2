@@ -82,7 +82,7 @@ namespace Game.Scripts.Managers.Block.Mono
             StopPingPong();
             int startxPosition = Random.value > 0.5f ? 5 : -5;
             transform.position = VectorHelper.GetVectorWith(VectorHelper.Vector3Coord.x,transform.position,startxPosition);
-            float speed = Mathf.Clamp( _gameConfig.slowestPingPongSpeed - (PersistentData.Level * 0.2f), 1, _gameConfig.slowestPingPongSpeed);
+            float speed = Mathf.Clamp( _gameConfig.slowestPingPongSpeed - (PersistentData.Level * 0.2f), 0.5f, _gameConfig.slowestPingPongSpeed);
             _pingPongTween = transform.DOMoveX(startxPosition * -1, speed).
                 SetLoops(-1,LoopType.Yoyo).SetUpdate(UpdateType.Fixed).SetEase(Ease.Linear);
         }

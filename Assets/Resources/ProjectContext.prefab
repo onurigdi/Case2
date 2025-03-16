@@ -78,6 +78,42 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   blockPrefab: {fileID: 8315944290924115496, guid: 76a1e67b44691294887f3cac75a7ac15, type: 3}
   playerController: {fileID: 393434313956314507}
+  audioClips:
+  - name: BestFit
+    clip: {fileID: 8300000, guid: dfa53f96a65a3c84ab59893468d1708c, type: 3}
+    volume: 1
+    pitch: 1
+    loop: 0
+  - name: ChopStack
+    clip: {fileID: 8300000, guid: 037da6f3b4abd2d44afd7fad900cdece, type: 3}
+    volume: 3
+    pitch: 1
+    loop: 0
+  - name: FootStep1
+    clip: {fileID: 8300000, guid: 97ead597657038d418200a81340169ab, type: 3}
+    volume: 0.2
+    pitch: 1
+    loop: 0
+  - name: FootStep2
+    clip: {fileID: 8300000, guid: f8a176b09428e544cbab4fb2b7f8b740, type: 3}
+    volume: 0.2
+    pitch: 1
+    loop: 0
+  - name: FootStep3
+    clip: {fileID: 8300000, guid: 78e05cd50796f4f4985abe679910c99b, type: 3}
+    volume: 0.2
+    pitch: 1
+    loop: 0
+  - name: FootStep4
+    clip: {fileID: 8300000, guid: 0145767611203ca4fb5e27760289146d, type: 3}
+    volume: 0.2
+    pitch: 1
+    loop: 0
+  - name: FootStep0
+    clip: {fileID: 8300000, guid: e67483d019320d64e82dda3624d065cc, type: 3}
+    volume: 0.2
+    pitch: 1
+    loop: 0
   config: {fileID: 11400000, guid: 69ffe1fad3c416e4fb5d1a15b53c77c5, type: 2}
 --- !u!1001 &5487991503909867532
 PrefabInstance:
