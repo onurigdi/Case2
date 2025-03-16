@@ -31,6 +31,7 @@ namespace Game.Scripts.Managers.State
             if (newState == CurrentGameState.Success)
             {
                 PersistentData.Level++;
+                _generalEventsPublisher?.Publish(GeneralEvents.OnLevelChanged,null);
             }
         }
 

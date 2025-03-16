@@ -4,6 +4,6 @@ namespace Game.Scripts.Enums
     {
         OnStateChanged,
         OnBlockChopped,
-        OnLevelBlocksFinished
+        OnLevelChanged,
     }
 }
