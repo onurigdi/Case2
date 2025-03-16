@@ -6,6 +6,7 @@ using Game.Scripts.Managers.State.Enums;
 using Game.Scripts.Pools;
 using Game.Scripts.Utils.Helpers;
 using MessagePipe;
+using UniRx;
 using UnityEngine;
 using Zenject;
 
@@ -16,6 +17,7 @@ namespace Game.Scripts.Managers.Block
         
         private IDisposable _disposable;
         [Inject] private ISubscriber<InputEvents,object> _inputEventsSubscriber;
+        [Inject] private IPublisher<GeneralEvents,object> _generalEventsPublisher;
         [Inject] private GameConfig _gameConfig;
         [Inject] private BlockPool _blockPool;
         private Vector3 _lastBlockPosition;
@@ -40,6 +42,9 @@ namespace Game.Scripts.Managers.Block
         private void OnGameStartRequested(object obj)
         {
             SpawnNextBlock();
+
+            /*IDisposable asd = Observable.Interval(TimeSpan.FromSeconds(0.9f)) test perfect combo
+                .Subscribe((long l) => OnChopBlockRequested(null));*/
         }
 
         private void SpawnNextBlock()
@@ -77,16 +82,13 @@ namespace Game.Scripts.Managers.Block
 
             float gameOverDist = _lastBlock.transform.lossyScale.x * 0.5f + _previousBlock.transform.lossyScale.x * 0.5f;
 
-        
+            
             //if out of previous block then drop it
             if (Vector3.Distance(currentBlockPosVector, preciousBlockPosVector) > gameOverDist)
             {
-                _lastBlock.DropBlock(()=> _blockPool.Despawn(_lastBlock));
-                return;
+                _lastBlock.DropBlock();
             }
-
-        
-            if (Vector3.Distance(currentBlockPosVector, preciousBlockPosVector) <_gameConfig.perfectDist)
+            else if (Vector3.Distance(currentBlockPosVector, preciousBlockPosVector) <_gameConfig.perfectDist)
             {
                 PerfectScore();            
             }
@@ -95,6 +97,8 @@ namespace Game.Scripts.Managers.Block
                 //perfectScoreCounter = 0;
                 ChopStack();
             }
+            
+            _generalEventsPublisher?.Publish(GeneralEvents.OnBlockChopped,_lastBlock);
         }
         
         private void ChopStack()
@@ -125,7 +129,7 @@ namespace Game.Scripts.Managers.Block
 
             leftoverBlockPiece.SetScale(VectorHelper.GetVectorWith(axis, _lastBlock.transform.lossyScale, leftoverBlockScale));
             leftoverBlockPiece.SetPosition(VectorHelper.GetVectorWith(axis, _lastBlock.transform.position, leftoverBlockPos));
-            leftoverBlockPiece.DropBlock(()=> _blockPool.Despawn(leftoverBlockPiece));
+            leftoverBlockPiece.DropBlock();
         
             _lastBlock.SetPosition(VectorHelper.GetVectorWith(axis, _lastBlock.transform.position, remainingBlockPos));
             _lastBlock.SetScale(VectorHelper.GetVectorWith(axis, _lastBlock.transform.lossyScale, remainingBlockScale));        

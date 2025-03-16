@@ -1,5 +1,7 @@
 using System;
+using DG.Tweening;
 using Game.Scripts.Enums;
+using Game.Scripts.Managers.Block.Mono;
 using Game.Scripts.Managers.Input.Enums;
 using Game.Scripts.Managers.State;
 using Game.Scripts.Managers.State.Enums;
@@ -13,6 +15,7 @@ namespace Game.Scripts.Controllers.Player
     {
         private IDisposable _disposable;
         private StateManager _stateManager;
+        private Tween _moveTween;
 
         [Inject]
         private void Setup(ISubscriber<GeneralEvents,object> generalEventsSubscriber,
@@ -20,7 +23,7 @@ namespace Game.Scripts.Controllers.Player
         {
             _stateManager = stateManager;
             var bag = DisposableBag.CreateBuilder();
-            inputEventsSubscriber.Subscribe(InputEvents.OnChopBlockRequested, OnMoveRequested).AddTo(bag);
+            generalEventsSubscriber.Subscribe(GeneralEvents.OnBlockChopped, OnBlockChopped).AddTo(bag);
             inputEventsSubscriber.Subscribe(InputEvents.OnGameStartRequested, OnGameStartRequested).AddTo(bag);
             _disposable = bag.Build();
         }
@@ -28,16 +31,39 @@ namespace Game.Scripts.Controllers.Player
         private void OnDisable()
         {
             _disposable?.Dispose();
+            _moveTween?.Kill();
         }
 
-        private void OnMoveRequested(object obj)
+        private void OnBlockChopped(object obj)
         {
-            _stateManager.ChangeState(CurrentGameState.Running);
+            Block block = (Block)obj;
+            RunToTarget(block.transform.position);
         }
         
         private void OnGameStartRequested(object obj)
         {
             _stateManager.ChangeState(CurrentGameState.Waiting);
+        }
+
+        private void RunToTarget(Vector3 position)
+        {
+            _stateManager.ChangeState(CurrentGameState.Running);
+            Vector3 startPos = transform.position;
+            Vector3 midPoint = position - Vector3.forward * (2.67322f / 2f);  
+            Vector3 endPos = position;
+
+            Vector3[] path = { startPos, midPoint, endPos };
+
+            _moveTween = transform
+                .DOPath(path, 2f, PathType.Linear, PathMode.Full3D)
+                .SetSpeedBased()
+                .SetLookAt(0.1f)
+                .SetEase(Ease.Linear)
+                .OnComplete(() => 
+                {
+                    transform.rotation = Quaternion.identity;  
+                    _stateManager.ChangeState(CurrentGameState.Waiting);
+                });
         }
         
     }

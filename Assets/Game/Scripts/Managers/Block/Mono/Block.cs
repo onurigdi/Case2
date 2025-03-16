@@ -2,6 +2,7 @@ using System;
 using DG.Tweening;
 using Game.Scripts.Config;
 using Game.Scripts.Managers.Block.Enums;
+using Game.Scripts.Pools;
 using Game.Scripts.Utils.Helpers;
 using UnityEngine;
 using Zenject;
@@ -19,6 +20,7 @@ namespace Game.Scripts.Managers.Block.Mono
         private Material _activeMaterial;
 
         [Inject] private GameConfig _gameConfig;
+        [Inject] private BlockPool _blockPool;
         public void Reset()
         {
             rb.isKinematic = true;
@@ -63,13 +65,13 @@ namespace Game.Scripts.Managers.Block.Mono
                 SetLoops(-1,LoopType.Yoyo).SetUpdate(UpdateType.Fixed).SetEase(Ease.Linear);
         }
 
-        public void DropBlock(Action dropCompleted)
+        public void DropBlock()
         {
             StopPingPong();
             rb.isKinematic = false;
             DOVirtual.DelayedCall(3, () =>
             {
-                dropCompleted?.Invoke();
+                _blockPool.Despawn(this);
             });
         }
         
