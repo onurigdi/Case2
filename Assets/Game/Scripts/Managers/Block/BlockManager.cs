@@ -105,7 +105,7 @@ namespace Game.Scripts.Managers.Block
                 _choppedBlocks.Add(_lastBlock);
                 //flag the block as its last block
                 if (_choppedBlocks.Count == _blockCountToWin)
-                    _lastBlock.SetLastBlockToWin();
+                    _lastBlock?.SetLastBlockToWin();
             }
         }
 
@@ -160,6 +160,9 @@ namespace Game.Scripts.Managers.Block
         
         void StopAndChopBlock()
         {
+            if (_choppedBlocks.Count == _blockCountToWin && _lastBlock.IsChopped)
+                return;
+            
             _lastBlock.StopPingPong();
             
             Vector3 currentBlockPosVector = VectorHelper.GetXVector(_lastBlock.transform.position);
@@ -223,13 +226,15 @@ namespace Game.Scripts.Managers.Block
             leftoverBlockPiece.DropBlock();
         
             _lastBlock.SetPosition(VectorHelper.GetVectorWith(axis, _lastBlock.transform.position, remainingBlockPos));
-            _lastBlock.SetScale(VectorHelper.GetVectorWith(axis, _lastBlock.transform.lossyScale, remainingBlockScale));        
+            _lastBlock.SetScale(VectorHelper.GetVectorWith(axis, _lastBlock.transform.lossyScale, remainingBlockScale));
+            _lastBlock.SetChopped();
             //baseBlock = currentBlock.transform;
         }
 
 
         void PerfectScore()
         {
+            _lastBlock.SetChopped();
             _audioManager.PlayPitchIncreased(SoundType.BestFit,1 + (_perfectScoreCounter * 0.05f)); 
             _perfectScoreCounter++;
         }

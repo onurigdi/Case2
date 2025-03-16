@@ -26,19 +26,23 @@ namespace Game.Scripts.Controllers.Player
         private Vector3 _initialPosition;
         
         private Vector3 _previousChoppedBlockPosition;
+        private IPublisher<GeneralEvents, object> _generalEventsPublisher;
 
         [Inject]
         private void Setup(ISubscriber<GeneralEvents,object> generalEventsSubscriber,
             ISubscriber<InputEvents,object> inputEventsSubscriber,
+            IPublisher<GeneralEvents,object> generalEventsPublisher,
             StateManager stateManager,
             GameConfig gameConfig,
             BlockManager blockManager)
         {
+            _generalEventsPublisher = generalEventsPublisher;
             _blockManager = blockManager;
             _gameConfig = gameConfig;
             _stateManager = stateManager;
             var bag = DisposableBag.CreateBuilder();
             generalEventsSubscriber.Subscribe(GeneralEvents.OnBlockChopped, OnBlockChopped).AddTo(bag);
+            generalEventsSubscriber.Subscribe(GeneralEvents.OnStateChanged, OnStateChanged).AddTo(bag);
             inputEventsSubscriber.Subscribe(InputEvents.OnGameStartRequested, OnGameStartRequested).AddTo(bag);
             inputEventsSubscriber.Subscribe(InputEvents.OnGameRestartRequested, OnGameRestartRequested).AddTo(bag);
             _disposable = bag.Build();
@@ -50,8 +54,14 @@ namespace Game.Scripts.Controllers.Player
             _disposable?.Dispose();
             _moveTween?.Kill();
         }
-        
 
+
+        private void OnStateChanged(object obj)
+        {
+            CurrentGameState newState = (CurrentGameState)obj;
+            if (newState == CurrentGameState.Fail || newState == CurrentGameState.Success)
+                _moveTween?.Kill();
+        }
         private void OnBlockChopped(object obj)
         {
             Block block = (Block)obj;
@@ -74,7 +84,7 @@ namespace Game.Scripts.Controllers.Player
         private void RunToTarget(Block newTargetBlock)
         {
             Vector3 position = newTargetBlock.transform.position;
-            
+                
             //if block out of previous block and dropped totally then do not turn forward to it. go players forward
             //or if its finish line no need to bend to platform middle the pathway. just go forward
             if (newTargetBlock.IsBlockDropped || newTargetBlock.IsFinishLine)

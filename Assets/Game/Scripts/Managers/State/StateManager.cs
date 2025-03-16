@@ -32,7 +32,6 @@ namespace Game.Scripts.Managers.State
             {
                 PersistentData.Level++;
             }
-            Debug.Log("State changed to : " + newState.ToString());
         }
 
         public void Dispose()

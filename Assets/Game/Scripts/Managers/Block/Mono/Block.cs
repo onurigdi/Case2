@@ -15,6 +15,8 @@ namespace Game.Scripts.Managers.Block.Mono
         [SerializeField] private MeshRenderer mr;
         [SerializeField] private Rigidbody rb;
         
+        private bool _chopped;
+        public  bool IsChopped => _chopped;
         private bool _isFinishLine;
         public bool IsFinishLine => _isFinishLine;
         private bool _isLastBlock;
@@ -72,6 +74,11 @@ namespace Game.Scripts.Managers.Block.Mono
             _isFinishLine = true;
         }
         
+        public void SetChopped()
+        {
+            _chopped = true;
+        }
+        
         public Material GetActiveMaterial()
         {
             return _activeMaterial;
@@ -103,7 +110,5 @@ namespace Game.Scripts.Managers.Block.Mono
         {
             _pingPongTween?.Kill();
         }
-
-
     }
 }
