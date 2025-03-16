@@ -12350,6 +12350,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: CameraController
       objectReference: {fileID: 0}
+    - target: {fileID: 1421564650939182727, guid: a46e51fbfac426840865504dd3c7e295, type: 3}
+      propertyPath: m_DefaultBlend.m_Time
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a46e51fbfac426840865504dd3c7e295, type: 3}
 --- !u!1001 &1878671402081732248

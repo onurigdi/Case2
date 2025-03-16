@@ -11,8 +11,13 @@ namespace Game.Scripts.Config
         public Vector3 defaultStackScale;
         public float slowestPingPongSpeed;
         public float perfectDist;
-        public Material testMaterial;
+        public Material[] stackMaterials;
         public Material finishLineMaterial;
         public LayerMask groundLayer;
+
+        public Material GetRandomMaterial()
+        {
+            return stackMaterials[Random.Range(0, stackMaterials.Length)];
+        }
     }
 }

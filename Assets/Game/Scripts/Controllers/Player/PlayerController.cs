@@ -24,6 +24,8 @@ namespace Game.Scripts.Controllers.Player
         private GameConfig _gameConfig;
         private BlockManager _blockManager;
         private Vector3 _initialPosition;
+        
+        private Vector3 _previousChoppedBlockPosition;
 
         [Inject]
         private void Setup(ISubscriber<GeneralEvents,object> generalEventsSubscriber,
@@ -48,6 +50,7 @@ namespace Game.Scripts.Controllers.Player
             _disposable?.Dispose();
             _moveTween?.Kill();
         }
+        
 
         private void OnBlockChopped(object obj)
         {
@@ -62,6 +65,7 @@ namespace Game.Scripts.Controllers.Player
 
         private void OnGameRestartRequested(object obj)
         {
+            transform.rotation = Quaternion.identity;
             _moveTween?.Kill();
             transform.position = _initialPosition;
             _stateManager.ChangeState(CurrentGameState.Idle);
@@ -70,10 +74,11 @@ namespace Game.Scripts.Controllers.Player
         private void RunToTarget(Block newTargetBlock)
         {
             Vector3 position = newTargetBlock.transform.position;
+            
             //if block out of previous block and dropped totally then do not turn forward to it. go players forward
             //or if its finish line no need to bend to platform middle the pathway. just go forward
             if (newTargetBlock.IsBlockDropped || newTargetBlock.IsFinishLine)
-                position = VectorHelper.GetVectorWith(VectorHelper.Vector3Coord.x,position,transform.position.x);
+                position = VectorHelper.GetVectorWith(VectorHelper.Vector3Coord.x,position,_previousChoppedBlockPosition.x);
             
             _stateManager.ChangeState(CurrentGameState.Running);
             Vector3 startPos = transform.position;
@@ -120,6 +125,8 @@ namespace Game.Scripts.Controllers.Player
                           
                     }
                 });
+            
+            _previousChoppedBlockPosition = position;
         }
         
     }

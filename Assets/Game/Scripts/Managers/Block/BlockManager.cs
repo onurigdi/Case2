@@ -54,11 +54,6 @@ namespace Game.Scripts.Managers.Block
         private void OnGameStartRequested(object obj)
         {
             SpawnNextBlock();
-
-            /*test perfect combo todo: remove this when its complete 
-            float speed = Mathf.Clamp( _gameConfig.slowestPingPongSpeed - (PersistentData.Level * 0.2f), 1, _gameConfig.slowestPingPongSpeed);
-             IDisposable asd = Observable.Interval(TimeSpan.FromSeconds(speed)) 
-                .Subscribe((long l) => OnChopBlockRequested(null));*/
         }
         
         private void OnGameRestartRequested(object obj)
@@ -93,6 +88,9 @@ namespace Game.Scripts.Managers.Block
         }
         private void SpawnNextBlock()
         {
+            // if last Block out of previous one and dropped totally dont spawn new. wait for player to fall
+            if (_lastBlock.IsBlockDropped || _lastBlock.IsLastBlockToWin) 
+                return;
             //spawn new blocks if level did not finish yet
             if (_choppedBlocks.Count < _blockCountToWin)
             {
@@ -120,7 +118,7 @@ namespace Game.Scripts.Managers.Block
         private void RandomGenerateNewLevel()
         {
             ClearOldLevelBlocks();
-            _blockCountToWin = Random.Range(10 + PersistentData.Level, 15 + PersistentData.Level);
+            _blockCountToWin = Random.Range(5 + PersistentData.Level, 8 + PersistentData.Level);
             
             // (LevelMaxStackCount + 1) mean total blockcount + 1 for finishblock
             Vector3 finishPos = new Vector3(0, 0, (_playerController.transform.position.z) + ((_blockCountToWin + 1) * _gameConfig.stackLength));
@@ -151,7 +149,7 @@ namespace Game.Scripts.Managers.Block
             
             _lastBlock.SetPosition(_lastBlockPosition);
             _lastBlock.SetScale(_previousBlock ? _previousBlock.transform.lossyScale : _gameConfig.defaultStackScale);
-            _lastBlock.SetMaterial(_gameConfig.testMaterial);
+            _lastBlock.SetMaterial(_gameConfig.GetRandomMaterial());
         }
         
         void StopAndChopBlock()

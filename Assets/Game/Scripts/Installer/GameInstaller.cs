@@ -36,7 +36,7 @@ namespace Game.Scripts.Installer
             #region Pool Bindings
 
             Container.BindMemoryPool<Block, BlockPool>()
-                .WithInitialSize(25) 
+                .WithInitialSize(40) 
                 .FromComponentInNewPrefab(blockPrefab) 
                 .UnderTransformGroup("BlockPool");             
 
