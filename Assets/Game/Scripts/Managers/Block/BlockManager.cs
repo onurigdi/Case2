@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using Game.Scripts.Config;
+using Game.Scripts.Controllers.Player;
 using Game.Scripts.Enums;
 using Game.Scripts.Managers.Input.Enums;
 using Game.Scripts.Managers.State.Enums;
@@ -9,6 +11,7 @@ using MessagePipe;
 using UniRx;
 using UnityEngine;
 using Zenject;
+using Random = UnityEngine.Random;
 
 namespace Game.Scripts.Managers.Block
 {
@@ -17,12 +20,19 @@ namespace Game.Scripts.Managers.Block
         
         private IDisposable _disposable;
         [Inject] private ISubscriber<InputEvents,object> _inputEventsSubscriber;
+        [Inject] private ISubscriber<GeneralEvents,object> _generalEventsSubscriber;
         [Inject] private IPublisher<GeneralEvents,object> _generalEventsPublisher;
         [Inject] private GameConfig _gameConfig;
         [Inject] private BlockPool _blockPool;
+        [Inject] private PlayerController _playerController;
         private Vector3 _lastBlockPosition;
         private Mono.Block _lastBlock;
         private Mono.Block _previousBlock;
+
+        private int _blockCountToWin;
+        private Mono.Block _activeFinishBlock;
+        public Mono.Block ActiveFinishBlock => _activeFinishBlock;
+        private List<Mono.Block> _choppedBlocks = new List<Mono.Block>();
 
         public void Initialize()
         {
@@ -30,6 +40,8 @@ namespace Game.Scripts.Managers.Block
             var bag = DisposableBag.CreateBuilder();
             _inputEventsSubscriber.Subscribe(InputEvents.OnChopBlockRequested, OnChopBlockRequested).AddTo(bag);
             _inputEventsSubscriber.Subscribe(InputEvents.OnGameStartRequested, OnGameStartRequested).AddTo(bag);
+            _inputEventsSubscriber.Subscribe(InputEvents.OnGameRestartRequested, OnGameRestartRequested).AddTo(bag);
+            _generalEventsSubscriber.Subscribe(GeneralEvents.OnStateChanged, OnStateChanged).AddTo(bag);
             _disposable = bag.Build();
         }
 
@@ -43,14 +55,54 @@ namespace Game.Scripts.Managers.Block
         {
             SpawnNextBlock();
 
-            /*IDisposable asd = Observable.Interval(TimeSpan.FromSeconds(0.9f)) test perfect combo
+            /*test perfect combo todo: remove this when its complete 
+            float speed = Mathf.Clamp( _gameConfig.slowestPingPongSpeed - (PersistentData.Level * 0.2f), 1, _gameConfig.slowestPingPongSpeed);
+             IDisposable asd = Observable.Interval(TimeSpan.FromSeconds(speed)) 
                 .Subscribe((long l) => OnChopBlockRequested(null));*/
         }
+        
+        private void OnGameRestartRequested(object obj)
+        {
+            RestartGame();
+        }
 
+        private void OnStateChanged(object obj)
+        {
+            if ((CurrentGameState)obj == CurrentGameState.Success)
+            {
+                //skip finishline block z position
+                _lastBlockPosition = VectorHelper.AddVectorWith(VectorHelper.Vector3Coord.z,_lastBlockPosition,_gameConfig.stackLength);
+                RandomGenerateNewLevel();
+            }
+        }
+
+        private void RestartGame()
+        {
+            _blockPool.DespawnAllActiveBlocks();
+            //all blocks despawned on restart.No need to despawn previous level blocks again
+            _choppedBlocks.Clear();
+            _lastBlockPosition = Vector3.zero;
+            _lastBlock = null;
+            _previousBlock = null;
+            for (int i = 0; i < 3; i++)
+            {
+                SpawnBlock(0);
+            }
+            
+            RandomGenerateNewLevel();
+        }
         private void SpawnNextBlock()
         {
-            SpawnBlock(0);
-            _lastBlock?.StartPingPong();
+            //spawn new blocks if level did not finish yet
+            if (_choppedBlocks.Count < _blockCountToWin)
+            {
+                SpawnBlock(0);
+                _lastBlock?.StartPingPong();
+                _choppedBlocks.Add(_lastBlock);
+                //flag the block as its last block
+                if (_choppedBlocks.Count == _blockCountToWin)
+                    _lastBlock.SetLastBlockToWin();
+            }
         }
 
         private void GenerateInitialBlocks()
@@ -59,12 +111,41 @@ namespace Game.Scripts.Managers.Block
             {
                 SpawnBlock(0);
             }
+
+            RandomGenerateNewLevel();
         }
+        
+        //this method select random total block count to finish level depends on player level randomly
+        //and create FinishLine Block
+        private void RandomGenerateNewLevel()
+        {
+            ClearOldLevelBlocks();
+            _blockCountToWin = Random.Range(10 + PersistentData.Level, 15 + PersistentData.Level);
+            
+            // (LevelMaxStackCount + 1) mean total blockcount + 1 for finishblock
+            Vector3 finishPos = new Vector3(0, 0, (_playerController.transform.position.z) + ((_blockCountToWin + 1) * _gameConfig.stackLength));
+            _activeFinishBlock = _blockPool.SpawnBlock();
+            _activeFinishBlock.SetMaterial(_gameConfig.finishLineMaterial);
+            _activeFinishBlock.SetPosition(finishPos);
+            _activeFinishBlock.SetScale(_gameConfig.defaultStackScale);//finishline always default size
+            _activeFinishBlock.SetAsFinishBlock();
+        }
+
+        private void ClearOldLevelBlocks()
+        {
+            foreach (var block in _choppedBlocks)
+            {
+                _blockPool.DeSpawnBlock(block);
+            }
+            _choppedBlocks.Clear();
+        }
+        
+        
 
         private void SpawnBlock(float xPosition)
         {
             _previousBlock = _lastBlock;
-            _lastBlock = _blockPool.Spawn();
+            _lastBlock = _blockPool.SpawnBlock();
             _lastBlockPosition = VectorHelper.GetVectorWith(VectorHelper.Vector3Coord.x,_lastBlockPosition,xPosition);
             _lastBlockPosition = VectorHelper.AddVectorWith(VectorHelper.Vector3Coord.z,_lastBlockPosition,_gameConfig.stackLength);
             
@@ -117,7 +198,7 @@ namespace Game.Scripts.Managers.Block
         
             float remainingBlockScale = baseBlockScale - relDist;
 
-            Mono.Block leftoverBlockPiece = _blockPool.Spawn();
+            Mono.Block leftoverBlockPiece = _blockPool.SpawnBlock();
             leftoverBlockPiece.SetPosition(_lastBlock.transform.position);
             leftoverBlockPiece.SetMaterial(oldMat);
 

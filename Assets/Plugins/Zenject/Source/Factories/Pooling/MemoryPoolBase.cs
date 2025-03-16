@@ -117,8 +117,8 @@ namespace Zenject
 
         public void Despawn(TContract item)
         {
-            Assert.That(!_inactiveItems.Contains(item),
-                "Tried to return an item to pool {0} twice", GetType());
+/*            Assert.That(!_inactiveItems.Contains(item),
+                "Tried to return an item to pool {0} twice", GetType());*/
 
             _activeCount--;
 

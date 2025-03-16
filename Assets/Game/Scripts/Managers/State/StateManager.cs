@@ -2,6 +2,7 @@ using System;
 using Game.Scripts.Enums;
 using Game.Scripts.Managers.Input.Enums;
 using Game.Scripts.Managers.State.Enums;
+using Game.Scripts.Utils.Helpers;
 using MessagePipe;
 using UnityEngine;
 using Zenject;
@@ -27,7 +28,10 @@ namespace Game.Scripts.Managers.State
         {
             CurrentGameState = newState;
             _generalEventsPublisher?.Publish(GeneralEvents.OnStateChanged,CurrentGameState);
-            
+            if (newState == CurrentGameState.Success)
+            {
+                PersistentData.Level++;
+            }
             Debug.Log("State changed to : " + newState.ToString());
         }
 

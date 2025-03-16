@@ -4,5 +4,6 @@ namespace Game.Scripts.Managers.Input.Enums
     {
         OnGameStartRequested,
         OnChopBlockRequested,
+        OnGameRestartRequested
     }
 }

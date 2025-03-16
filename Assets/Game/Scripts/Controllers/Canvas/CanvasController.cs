@@ -10,6 +10,7 @@ namespace Game.Scripts.Controllers.Canvas
     public class CanvasController : MonoBehaviour
     {
         [SerializeField] private GameObject tapToStartText;
+        [SerializeField] private GameObject tapToReStartText;
         private IDisposable _disposable;
         [Inject]
         private void Setup(ISubscriber<GeneralEvents,object> generalEventsSubscriber)
@@ -22,7 +23,8 @@ namespace Game.Scripts.Controllers.Canvas
         private void OnStateChanged(object obj)
         {
             CurrentGameState newGameState = (CurrentGameState)obj;
-            tapToStartText.SetActive(newGameState == CurrentGameState.Idle);
+            tapToStartText.SetActive(newGameState == CurrentGameState.Idle || newGameState == CurrentGameState.Success);
+            tapToReStartText.SetActive(newGameState == CurrentGameState.Fail);
         }
     }
 }

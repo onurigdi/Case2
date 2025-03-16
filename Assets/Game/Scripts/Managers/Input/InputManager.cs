@@ -39,7 +39,10 @@ namespace Game.Scripts.Managers.Input
         private void OnStateChanged(object obj)
         {
             CurrentGameState newState = (CurrentGameState)obj;
-            if (newState == CurrentGameState.Waiting || newState == CurrentGameState.Idle || newState == CurrentGameState.Running)
+            if (newState == 
+                CurrentGameState.Waiting || newState == CurrentGameState.Idle 
+                || newState == CurrentGameState.Running || newState == CurrentGameState.Success
+                || newState == CurrentGameState.Fail)
                 StartInputListener();
             else
                 StopInputListener();
@@ -54,12 +57,16 @@ namespace Game.Scripts.Managers.Input
                 {
                     switch (_stateManager.CurrentGameState)
                     {
+                        case CurrentGameState.Success :
                         case CurrentGameState.Idle :
                             _inputEventsPublisher?.Publish(InputEvents.OnGameStartRequested,null);
                             break;
                         case CurrentGameState.Running:
                         case CurrentGameState.Waiting:  
                             _inputEventsPublisher?.Publish(InputEvents.OnChopBlockRequested,null);
+                            break;
+                        case CurrentGameState.Fail:  
+                            _inputEventsPublisher?.Publish(InputEvents.OnGameRestartRequested,null);
                             break;
                     }
                 }

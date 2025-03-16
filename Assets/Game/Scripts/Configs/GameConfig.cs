@@ -12,6 +12,7 @@ namespace Game.Scripts.Config
         public float slowestPingPongSpeed;
         public float perfectDist;
         public Material testMaterial;
+        public Material finishLineMaterial;
         public LayerMask groundLayer;
     }
 }

@@ -45,6 +45,8 @@ namespace Game.Scripts.Controllers.Player.Animation
                     break;
                 case CurrentGameState.Running : animationController.SetTrigger("Run");
                     break;
+                case CurrentGameState.Success : animationController.SetTrigger("Dance");
+                    break;
             }
 
             _oldState = newGameState;

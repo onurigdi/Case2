@@ -15,7 +15,15 @@ namespace Game.Scripts.Managers.Block.Mono
         [SerializeField] private MeshRenderer mr;
         [SerializeField] private Rigidbody rb;
         
+        private bool _isFinishLine;
+        public bool IsFinishLine => _isFinishLine;
+        private bool _isLastBlock;
+        public bool IsLastBlockToWin => _isLastBlock;
+        private bool _blockDropped;
+        public bool IsBlockDropped => _blockDropped;
+        
         private Tween _pingPongTween;
+        private Tween _delayTween;
         private PingPongDir _pingPongDir;
         private Material _activeMaterial;
 
@@ -23,6 +31,9 @@ namespace Game.Scripts.Managers.Block.Mono
         [Inject] private BlockPool _blockPool;
         public void Reset()
         {
+            _isFinishLine = false;
+            _isLastBlock = false;
+            _blockDropped = false;
             rb.isKinematic = true;
             _pingPongTween?.Kill();
             transform.rotation = Quaternion.identity;
@@ -31,6 +42,7 @@ namespace Game.Scripts.Managers.Block.Mono
         private void OnDisable()
         {
             _pingPongTween?.Kill();
+            _delayTween?.Kill();
         }
 
         public void SetPosition(Vector3 position)
@@ -50,6 +62,16 @@ namespace Game.Scripts.Managers.Block.Mono
             mr.material = _activeMaterial;
         }
         
+        public void SetLastBlockToWin()
+        {
+            _isLastBlock = true;
+        }
+        
+        public void SetAsFinishBlock()
+        {
+            _isFinishLine = true;
+        }
+        
         public Material GetActiveMaterial()
         {
             return _activeMaterial;
@@ -67,11 +89,13 @@ namespace Game.Scripts.Managers.Block.Mono
 
         public void DropBlock()
         {
+            _blockDropped = true;
             StopPingPong();
             rb.isKinematic = false;
-            DOVirtual.DelayedCall(3, () =>
+            _delayTween?.Kill();
+            _delayTween = DOVirtual.DelayedCall(3, () =>
             {
-                _blockPool.Despawn(this);
+                _blockPool.DeSpawnBlock(this);
             });
         }
         
@@ -79,6 +103,7 @@ namespace Game.Scripts.Managers.Block.Mono
         {
             _pingPongTween?.Kill();
         }
-        
+
+
     }
 }
