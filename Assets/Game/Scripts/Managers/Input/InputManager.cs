@@ -14,17 +14,21 @@ namespace Game.Scripts.Managers.Input
         private IDisposable _disposable;
         private IDisposable _inputDisposable;
         private IPublisher<InputEvents,object> _inputEventsPublisher;
+        private StateManager _stateManager;
 
 
         [Inject]
         private void Setup(
             ISubscriber<GeneralEvents,object> generalEventsSubscriber,
-            IPublisher<InputEvents,object> inputEventsPublisher)
+            IPublisher<InputEvents,object> inputEventsPublisher,
+            StateManager stateManager)
         {
+            _stateManager = stateManager;
             _inputEventsPublisher = inputEventsPublisher;
             var bag = DisposableBag.CreateBuilder();
             generalEventsSubscriber.Subscribe(GeneralEvents.OnStateChanged, OnStateChanged);
             _disposable = bag.Build();
+            StartInputListener();//initially start input listener
         }
         public void Dispose()
         {
@@ -48,7 +52,7 @@ namespace Game.Scripts.Managers.Input
             {
                 if (UnityEngine.Input.GetMouseButtonDown(0)) //old input system
                 {
-                    switch (StateManager.CurrentGameState)
+                    switch (_stateManager.CurrentGameState)
                     {
                         case CurrentGameState.Idle :
                             _inputEventsPublisher?.Publish(InputEvents.OnGameStartRequested,null);

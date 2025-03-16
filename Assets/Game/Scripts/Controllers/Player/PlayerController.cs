@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using DG.Tweening;
+using Game.Scripts.Config;
 using Game.Scripts.Enums;
 using Game.Scripts.Managers.Block.Mono;
 using Game.Scripts.Managers.Input.Enums;
@@ -16,11 +19,15 @@ namespace Game.Scripts.Controllers.Player
         private IDisposable _disposable;
         private StateManager _stateManager;
         private Tween _moveTween;
+        private GameConfig _gameConfig;
 
         [Inject]
         private void Setup(ISubscriber<GeneralEvents,object> generalEventsSubscriber,
-            ISubscriber<InputEvents,object> inputEventsSubscriber,StateManager stateManager)
+            ISubscriber<InputEvents,object> inputEventsSubscriber,
+            StateManager stateManager,
+            GameConfig gameConfig)
         {
+            _gameConfig = gameConfig;
             _stateManager = stateManager;
             var bag = DisposableBag.CreateBuilder();
             generalEventsSubscriber.Subscribe(GeneralEvents.OnBlockChopped, OnBlockChopped).AddTo(bag);
@@ -49,20 +56,36 @@ namespace Game.Scripts.Controllers.Player
         {
             _stateManager.ChangeState(CurrentGameState.Running);
             Vector3 startPos = transform.position;
-            Vector3 midPoint = position - Vector3.forward * (2.67322f / 2f);  
+            Vector3 midPoint = position - Vector3.forward * (_gameConfig.stackLength / 2f);  
             Vector3 endPos = position;
 
-            Vector3[] path = { startPos, midPoint, endPos };
+            List<Vector3> newPath = new List<Vector3>();
+            newPath.Add(startPos); //update start pos
+            
+            if (_moveTween != null && _moveTween.IsActive())  //if player moving actively
+            {
+                // get the old path points where player didnt already pass
+                newPath.AddRange(_moveTween.PathGetDrawPoints().ToList().FindAll(x=> x.z > startPos.z));  
+                _moveTween.Kill();
+                
+            }
+            
+            newPath.Add(midPoint);
+            newPath.Add(endPos);
 
+            _moveTween?.Kill();
             _moveTween = transform
-                .DOPath(path, 2f, PathType.Linear, PathMode.Full3D)
+                .DOPath(newPath.ToArray(), 2f, PathType.Linear, PathMode.Full3D)
                 .SetSpeedBased()
                 .SetLookAt(0.1f)
                 .SetEase(Ease.Linear)
                 .OnComplete(() => 
                 {
-                    transform.rotation = Quaternion.identity;  
-                    _stateManager.ChangeState(CurrentGameState.Waiting);
+                    if (_stateManager.CurrentGameState != CurrentGameState.Fail)
+                    {
+                        transform.rotation = Quaternion.identity;  
+                        _stateManager.ChangeState(CurrentGameState.Waiting);  
+                    }
                 });
         }
         

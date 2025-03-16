@@ -13,7 +13,7 @@ namespace Game.Scripts.Managers.State
         private IPublisher<GeneralEvents, object> _generalEventsPublisher;
         private IDisposable _disposable;
 
-        public static CurrentGameState CurrentGameState { get; private set; }
+        public CurrentGameState CurrentGameState { get; private set; }
 
         [Inject]
         private void Setup(IPublisher<GeneralEvents, object> generalEventsPublisher,

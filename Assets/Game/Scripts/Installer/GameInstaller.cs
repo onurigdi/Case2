@@ -1,4 +1,5 @@
 using Game.Scripts.Config;
+using Game.Scripts.Controllers.Player;
 using Game.Scripts.Enums;
 using Game.Scripts.Managers.Block;
 using Game.Scripts.Managers.Block.Mono;
@@ -15,8 +16,9 @@ namespace Game.Scripts.Installer
 {
     public class GameInstaller : MonoInstaller
     {
-        [Header("Pool References")]
+        [Header("References")]
         public Block blockPrefab;
+        public PlayerController playerController;
         
         [Header("Configs")]
         public GameConfig config;
@@ -25,7 +27,7 @@ namespace Game.Scripts.Installer
         public override void InstallBindings()
         {
             Container.BindInstances(config);
-
+            Container.Bind<PlayerController>().FromInstance(playerController).AsSingle();
             #region Managers
             Container.BindInterfacesAndSelfTo<BlockManager>().AsSingle();
             Container.BindInterfacesAndSelfTo<InputManager>().AsSingle();

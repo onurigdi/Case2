@@ -14,6 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stackLength: 2.67322
   defaultStackScale: {x: 2.778142, y: 1, z: 2.6732197}
-  slowestPingPongSpeed: 2
+  slowestPingPongSpeed: 3
   perfectDist: 0.05
   testMaterial: {fileID: 2100000, guid: b02ed249a60bdba41afe8f6ddacef5b4, type: 2}
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 64
