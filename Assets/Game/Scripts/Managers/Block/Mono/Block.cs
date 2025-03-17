@@ -33,6 +33,7 @@ namespace Game.Scripts.Managers.Block.Mono
         [Inject] private BlockPool _blockPool;
         public void Reset()
         {
+            _chopped = false;
             _isFinishLine = false;
             _isLastBlock = false;
             _blockDropped = false;
